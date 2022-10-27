@@ -1,0 +1,220 @@
+<html>
+  <head>
+    <style>
+      @media screen and (max-width: 400px) {
+        table thead {
+          display: none;
+        }
+        table td {
+          display: flex;
+        }
+
+        table td::before {
+          content: attr(label);
+          font-weight: bold;
+          width: 120px;
+          min-width: 120px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="//www.w3schools.com/w3css/4/w3.css" />
+    <link
+      rel="stylesheet"
+      href="https://www.w3schools.com/lib/w3-theme-blue.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//cdn.datatables.net/1.10.21/css/jquery.dataTables.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <div class="w3-bar w3-large w3-theme-d5">
+      <span class="w3-bar-item">ALLEGIANT FLIGHTS</span>
+      <a
+        href="https://www.allegiantair.com"
+        class="w3-bar-item w3-button w3-right"
+        >Go to Allegiantair.com</a
+      >
+    </div>
+    <div class="w3-container w3-theme-l5">
+      <h1 class="w3-opacity"><b>Upcoming Flights</b></h1>
+      <div class="w3-panel w3-white w3-card w3-display-container">
+        <div class="w3-half">
+          <p class="w3-opacity"><b>Select Origin(s)</b></p>
+          <p>
+            <input class="w3-check" type="checkbox" name="origin" value="TRI" />
+            <label>Tri-Cities</label>
+          </p>
+          <p>
+            <input class="w3-check" type="checkbox" name="origin" value="AVL" />
+            <label>Asheville</label>
+          </p>
+          <p>
+            <input class="w3-check" type="checkbox" name="origin" value="SFB" />
+            <label>Sanford</label>
+          </p>
+          <p>
+            <input class="w3-check" type="checkbox" name="origin" value="PIE" />
+            <label>St. Pete</label>
+          </p>
+        </div>
+        <div class="w3-half">
+          <p class="w3-opacity"><b>Select Destination(s)</b></p>
+          <p>
+            <input
+              class="w3-check"
+              type="checkbox"
+              name="destination"
+              value="TRI"
+            />
+            <label>Tri-Cities</label>
+          </p>
+          <p>
+            <input
+              class="w3-check"
+              type="checkbox"
+              name="destination"
+              value="AVL"
+            />
+            <label>Asheville</label>
+          </p>
+          <p>
+            <input
+              class="w3-check"
+              type="checkbox"
+              name="destination"
+              value="SFB"
+            />
+            <label>Sanford</label>
+          </p>
+          <p>
+            <input class="w3-check" type="checkbox" name="destination
+            value="PIE" />
+            <label>St. Pete</label>
+          </p>
+        </div>
+
+        <button
+          id="getFlights"
+          class="w3-btn w3-white w3-border w3-border-blue w3-round-xlarge"
+        >
+          Get Flights
+        </button>
+        <div class="w3-padding-16">
+          <table id="flights-table" class="w3-table-all">
+            <thead>
+              <tr class="w3-theme-d4">
+                <th>ID</th>
+                <th>Number</th>
+                <th>DepartTime</th>
+                <th>ArriveTime</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Price</th>
+                <th>Seats</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"
+    ></script>
+
+    <script>
+      $(document).ready(function () {
+        var flightTable = $("#flights-table").DataTable({
+          pageLength: 50,
+        });
+
+        $("#getFlights").click(function () {
+          var origins = [];
+          var destinations = [];
+
+          flightTable.clear();
+
+          $.each($("input[name='origin']:checked"), function () {
+            origins.push($(this).val());
+          });
+
+          $.each($("input[name='destination']:checked"), function () {
+            destinations.push($(this).val());
+          });
+
+          $.each(origins, function (i, origin) {
+            $.each(destinations, function (i, destination) {
+              $.when(
+                $.ajax({
+                  url: "/api/getFlights",
+                  method: "GET",
+                  crossDomain: true,
+                  responseType: "application/json",
+                  data: {
+                    origin: origin,
+                    destination: destination,
+                  },
+                  // url: "https://www.allegiantair.com/graphql",
+                  // crossDomain: true,
+                  // method: "POST",
+                  // timeout: 20000,
+                  // contentType: 'application/json',
+                  // data: JSON.stringify({
+                  //   operationName: "flights",
+                  //   variables: {
+                  //     flightSearchCriteria: {
+                  //       tripType: "ONEWAY",
+                  //       origin: origin,
+                  //       destination: destination,
+                  //       departDate: {
+                  //         date: "2022-10-24",
+                  //         minusDays: 0,
+                  //         plusDays: 60,
+                  //       },
+                  //       adultsCount: 1,
+                  //       childrenCount: 0,
+                  //       lapInfantCount: 0,
+                  //       lapInfantDobs: [],
+                  //     },
+                  //   },
+                  //   query:
+                  //     "query flights($flightSearchCriteria: FlightSearchCriteriaInput!) {\n  transactionId\n  flights(flightSearchCriteria: $flightSearchCriteria) {\n    departing {\n      ...FlightOptionFragment\n      __typename\n    }\n    returning {\n      ...FlightOptionFragment\n      __typename\n    }\n    loyaltyFare {\n      discount\n      __typename\n    }\n    __typename\n  }\n  order {\n    items {\n      id\n      __typename\n      ... on FlightOrderItem {\n        flight {\n          id\n          __typename\n        }\n        __typename\n      }\n      ... on ShowOrderItem {\n        id\n        type\n        show {\n          categoryCode\n          __typename\n        }\n        __typename\n      }\n    }\n    __typename\n  }\n}\n\nfragment FlightOptionFragment on FlightOption {\n  id\n  flight {\n    id\n    number\n    origin {\n      displayName\n      code\n      __typename\n    }\n    destination {\n      code\n      displayName\n      __typename\n    }\n    departingTime\n    arrivalTime\n    isOvernight\n    __typename\n  }\n  strikethruPrice\n  price\n  baseFare\n  availableSeatsCount\n  discountType\n  totalDiscountValue\n  incentiveType\n  incentiveSavedAmount\n  incentiveReturnDate\n  onTimePerformance {\n    onTimeArrival\n    thirtyMinuteLate\n    cancellations\n    disclaimer\n    __typename\n  }\n  __typename\n}\n",
+                  // }),
+                }).done(function (response) {
+                  console.log(response);
+                  flights = response.data.flights.departing;
+                })
+              ).then(function () {
+                $.each(flights, function (i, flight) {
+                  flightTable.row
+                    .add([
+                      flight.id,
+                      flight.flight.number,
+                      flight.flight.departingTime,
+                      flight.flight.arrivalTime,
+                      flight.flight.origin.code,
+                      flight.flight.destination.code,
+                      flight.price,
+                      flight.availableSeatsCount,
+                    ])
+                    .draw();
+                });
+              });
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
